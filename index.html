@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Shortlist</title>
+    <style>
+        :root {
+            --primary: #2d3436;
+            --accent: #00b894;
+            --info-bg: #4834d4;
+            /* Background is pure white */
+            --bg: #FFFFFF; 
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 { color: var(--primary); margin-bottom: 10px; }
+
+        #tracker {
+            background: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            /* Added a light border so the tracker doesn't vanish into the white bg */
+            border: 1px solid #dfe6e9;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-bottom: 50px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .card-container {
+            height: 450px;
+            perspective: 1000px;
+            width: 100%;
+        }
+
+        .flipper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .card-container.flipped .flipper { transform: rotateY(180deg); }
+
+        .front, .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- FRONT SIDE --- */
+        .front {
+            justify-content: flex-start;
+            padding-top: 20px;
+            z-index: 2;
+        }
+
+        .head-img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover; 
+            object-position: center top; 
+            border-radius: 50%;
+            /* Shadow makes the head float above the white page */
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+        }
+
+        .front h2 {
+            margin-top: 25px;
+            color: var(--primary);
+            font-size: 1.25rem;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        /* Selected State */
+        .card-container.selected .head-img {
+            /* Green Ring + slightly larger shadow */
+            box-shadow: 0 0 0 5px var(--accent), 0 25px 50px rgba(0,0,0,0.2);
+            transform: scale(1.05);
+        }
+
+        /* --- BACK SIDE --- */
+        .back {
+            background: var(--info-bg);
+            color: white;
+            transform: rotateY(180deg);
+            border-radius: 20px;
+            padding: 30px 25px;
+            box-sizing: border-box;
+            align-items: flex-start;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            text-align: left;
+        }
+
+        .card-container.selected .back {
+            box-shadow: inset 0 0 0 4px var(--accent);
+        }
+
+        .label { 
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;
+            margin-top: 15px; color: #a29bfe; font-weight: 700;
+        }
+        .label:first-of-type { margin-top: 0; }
+        
+        .value { 
+            font-size: 0.95rem; font-weight: 400; margin-top: 2px; line-height: 1.3;
+        }
+
+        .btn-select {
+            margin-top: auto; align-self: center; width: 100%;
+            background: rgba(255,255,255,0.15); color: white;
+            border: 2px solid white; padding: 10px 24px;
+            border-radius: 30px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-select:hover { background: rgba(255,255,255,0.25); }
+        .btn-select.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+        @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); max-width: 500px; } }
+        @media (max-width: 550px) {
+            .grid { grid-template-columns: 1fr; }
+            .head-img { width: 160px; height: 160px; }
+            .card-container { height: 380px; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Select a Shortlist</h1>
+    <div id="tracker">Selected: <span id="count">0</span> / 4</div>
+    <div class="grid" id="grid"></div>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const countSpan = document.getElementById('count');
+        let selectedCount = 0;
+
+        const candidates = [
+            { name: "Kira Patel", img: "Kira Patel.jpg", role: "Lead Learning Architect", exp: "10 Yrs", stack: "Storyline, Adobe CS", phi: "Cognitive Load Theory" },
+            { name: "Chris Liu", img: "Chris Liu.jpg", role: "E-Learning Developer", exp: "4 Yrs", stack: "Storyline, Canva, AI", phi: "Microlearning" },
+            { name: "Eric Stafford", img: "Eric Stafford.jpg", role: "Senior LXD", exp: "7 Yrs", stack: "Rise 360, Vyond, Figma", phi: "Human-Centered Design" },
+            { name: "Michelle Floyd", img: "Michelle Floyd.jpg", role: "Technical ID", exp: "5 Yrs", stack: "Camtasia, JS, xAPI", phi: "Simulation-based Learning" }
+        ];
+
+        candidates.forEach((person) => {
+            const card = document.createElement('div');
+            card.className = 'card-container';
+            card.innerHTML = `
+                <div class="flipper" onclick="flipCard(this)">
+                    <div class="front">
+                        <img src="${person.img}" class="head-img" alt="${person.name}"
+                             onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=${person.name}&background=fff&color=2d3436&size=200&rounded=true&bold=true'">
+                        <h2>${person.name}</h2>
+                    </div>
+                    <div class="back">
+                        <div class="label">Current Role</div>
+                        <div class="value">${person.role}</div>
+                        <div class="label">Experience</div>
+                        <div class="value">${person.exp}</div>
+                        <div class="label">Tech Stack</div>
+                        <div class="value">${person.stack}</div>
+                        <div class="label">Philosophy</div>
+                        <div class="value">${person.phi}</div>
+                        <button class="btn-select" onclick="toggleSelect(event, this)">Shortlist</button>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+        function flipCard(element) {
+            element.parentElement.classList.toggle('flipped');
+        }
+
+        function toggleSelect(event, btn) {
+            event.stopPropagation();
+            const card = btn.closest('.card-container');
+            const isSelected = card.classList.toggle('selected');
+            
+            if (isSelected) {
+                selectedCount++;
+                btn.innerText = "Selected ✓";
+                btn.classList.add('active');
+            } else {
+                selectedCount--;
+                btn.innerText = "Shortlist";
+                btn.classList.remove('active');
+            }
+            countSpan.innerText = selectedCount;
+        }
+    </script>
+</body>
+</html>
