@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Workflow Diagnostic & Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .step-panel { display: none; }
+        .step-panel.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 min-h-screen flex flex-col justify-between">
+
+    <header class="bg-white border-b border-gray-200 py-5 px-6 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+                <h1 class="text-xl font-bold text-gray-900">AI Workflow Diagnostic & Builder</h1>
+                <p class="text-sm text-gray-600">Save time on repetitive tasks by safely adding AI to your workflow.</p>
+            </div>
+            <div class="w-full md:w-64 bg-gray-200 rounded-full h-2.5">
+                <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 14%;"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-4xl w-full mx-auto p-4 md:p-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-10">
+
+            <div id="step1" class="step-panel active">
+                <span class="text-xs font-semibold uppercase tracking-wider text-blue-600">Step 1 of 7</span>
+                <h2 class="text-2xl font-bold mt-1 mb-4 text-gray-900">Identify a Recurring Task</h2>
+                <p class="text-gray-600 mb-6">Pick one task that you do repeatedly that could be improved with a little AI support.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                    <button onclick="selectExample('Drafting constructive employee feedback phrasing')" class="text-left p-3 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50/50 transition text-sm text-gray-700 font-medium">🗣️ Drafting constructive feedback phrasing</button>
+                    <button onclick="selectExample('Creating focus group questions from survey themes')" class="text-left p-3 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50/50 transition text-sm text-gray-700 font-medium">📊 Creating focus group questions from survey themes</button>
+                    <button onclick="selectExample('Drafting a standard operating procedure (SOP) for a team task')" class="text-left p-3 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50/50 transition text-sm text-gray-700 font-medium">📋 Writing a team SOP from rough notes</button>
+                    <button onclick="selectExample('Drafting a role kickoff intake checklist for a hiring manager sync')" class="text-left p-3 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50/50 transition text-sm text-gray-700 font-medium">🔍 Drafting a hiring manager intake checklist</button>
+                </div>
+
+                <label class="block font-semibold text-gray-800 mb-2">Complete this sentence:</label>
+                <div class="flex items-center gap-2 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <span class="text-gray-600 font-medium shrink-0 select-none hidden sm:inline">One recurring task I want to improve is:</span>
+                    <input type="text" id="taskInput" oninput="syncTaskName()" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Preparing a monthly program update">
+                </div>
+            </div>
+
+            <div id="step2" class="step-panel">
+                <span class="text-xs font-semibold uppercase tracking-wider text-blue-600">Step 2 of 7</span>
+                <h2 class="text-2xl font-bold mt-1 mb-2 text-gray-900">Is This a Good AI-Supported Workflow?</h2>
+                <p class="text-gray-600 mb-6">Before redesigning the task, check whether AI is appropriate and safe for this workflow.</p>
+
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <span class="text-gray-700 text-sm font-medium">Does this task involve drafting, summarizing, organizing, planning, or reviewing content?</span>
+                        <input type="checkbox" id="gate1" class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-red-50/50 rounded-xl border border-red-200">
+                        <span class="text-red-700 text-sm font-bold">Can I do this without entering confidential or sensitive personal information? *</span>
+                        <input type="checkbox" id="gate2" class="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-red-50/50 rounded-xl border border-red-200">
+                        <span class="text-red-700 text-sm font-bold">Will a human review the output before it is shared or used? *</span>
+                        <input type="checkbox" id="gate3" class="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-red-50/50 rounded-xl border border-red-200">
+                        <span class="text-red-700 text-sm font-bold">Would AI support the work without making a people-related decision? *</span>
+                        <input type="checkbox" id="gate4" class="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <span class="text-gray-700 text-sm font-medium">Would AI support save time or improve consistency if reused?</span>
+                        <input type="checkbox" id="gate5" class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div id="riskBlocker" class="hidden mt-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl">
+                    <p class="font-bold flex items-center gap-2">⚠️ Redesign Required</p>
+                    <p class="text-sm mt-1">To use AI safely, you must be able to check "Yes" to questions 2, 3, and 4. Please adjust your task parameters to remove sensitive data or human-decision elements before proceeding.</p>
+                </div>
+            </div>
+
+            <div id="step3" class="step-panel">
+                <span class="text-xs font-semibold uppercase tracking-wider text-blue-600">Step 3 of 7</span>
+                <h2 class="text-2xl font-bold mt-1 mb-4 text-gray-900">What Happens Today?</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">How often do you do this task?</label>
+                        <select id="frequency" class="w-full bg-white border border-gray-300 rounded-lg p-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option>Weekly</option>
+                            <option>Monthly</option>
+                            <option>Quarterly</option>
+                            <option>As needed</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Break down the first three steps you take today to complete this task:</label>
+                        <div class="space-y-2 pl-2 border-l-2 border-gray-200">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-gray-400 w-12">Step 1:</span>
+                                <input type="text" id="manualStep1" class="w-full bg-white border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Gather raw notes and observations">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-gray-400 w-12">Step 2:</span>
+                                <input type="text" id="manualStep2" class="w-full bg-white border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Organize notes into draft talking points">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-gray-400 w-12">Step 3:</span>
+                                <input type="text" id="manualStep3" class="w-full bg-white border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Clean up the phrasing to make it clear and formal">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">What makes this task slower or harder than it needs to be? (Your main friction point)</label>
+                        <textarea id="frictionInput" rows="2" class="w-full bg-white border border-gray-300 rounded-lg p-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., I spend too much time turning messy notes into clean language from scratch."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div id="step4" class="step-panel">
+                <span class="text-xs font-semibold uppercase tracking-wider text-blue-600">Step 4 of 7</span>
+                <h2 class="text-2xl font-bold mt-1 mb-2 text-gray-900">Find the Best AI Support Point</h2>
+                <p class="text-gray-600 mb-6">AI doesn't need to do the whole job. Select the <strong>one</strong> specific area where AI would eliminate your friction point.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="pivotContainer">
+                    <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition">
+                        <input type="radio" name="aiPoint" value="Create a first draft" checked class="mt-1 text-blue-600 focus:ring-blue-500">
+                        <div><span class="font-bold block text-sm">Create a first draft</span><span class="text-xs text-gray-500">Overcomes blank-page block.</span></div>
+                    </label>
+                    <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition">
+                        <input type="radio" name="aiPoint" value="Summarize notes or source material" class="mt-1 text-blue-600 focus:ring-blue-500">
+                        <div><span class="font-bold block text-sm">Summarize notes or source material</span><span class="text-xs text-gray-500">Condenses transcripts rapidly.</span></div>
+                    </label>
+                    <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition">
+                        <input type="radio" name="aiPoint" value="Organize messy information" class="mt-1 text-blue-600 focus:ring-blue-500">
+                        <div><span class="font-bold block text-sm">Organize messy information</span><span class="text-xs text-gray-500">Structures random thought notes.</span></div>
+                    </label>
+                    <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition">
+                        <input type="radio" name="aiPoint" value="Turn content into a checklist or template" class="mt-1 text-blue-600 focus:ring-blue-500">
+                        <div><span class="font-bold block text-sm">Turn content into a checklist</span><span class="text-xs text-gray-500">Builds operational repeatable frameworks.</span></div>
+                    </label>
+                    <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition">
+                        <input type="radio" name="aiPoint" value="Improve clarity, tone, or structure" class="mt-1 text-blue-600 focus:ring-blue-500">
+                        <div><span class="font-bold block text-sm">Improve clarity, tone, or structure</span><span class="text-xs text-gray-500">Polishes messaging style variables.</span></div>
+                    </label>
+                    <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition">
+                        <input type="radio" name="aiPoint" value="Pressure-test for gaps, risks, or assumptions" class="mt-1 text-blue-600 focus:ring-blue-500">
+                        <div><span class="font-bold block text-sm">Pressure-test details</span><span class="text-xs text-gray-500">Acts as a risk review peer.</span></div>
+                    </label>
+                </div>
+            </div>
+
+            <div id="step5" class="step-panel">
+                <span class="text-xs font-semibold uppercase tracking-wider text-blue-600">Step 5 of 7</span>
+                <h2 class="text-2xl font-bold mt-1 mb-4 text-gray-900">Your New Optimized Workflow Blueprint</h2>
+
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-400 p-8 rounded-2xl mb-6 shadow-sm">
+                    <h3 class="text-md font-bold text-blue-900 tracking-wide uppercase mb-4 flex items-center gap-2">
+                        <span>📋 Customized Operational Map:</span>
+                        <span id="bpTaskTitle" class="normal-case text-gray-700 font-semibold text-sm bg-white px-3 py-0.5 rounded-full border">Task</span>
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white p-3.5 rounded-xl border border-blue-100 shadow-xs flex gap-3">
+                            <div class="bg-gray-200 text-gray-700 font-bold h-6 w-6 rounded-full flex items-center justify-center text-xs shrink-0 mt-0.5">1</div>
+                            <div>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Human Prep Step</p>
+                                <p id="bpStep1" class="text-sm font-medium text-gray-800 mt-0.5">Loading step data...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-blue-600 p-4 rounded-xl shadow-md flex gap-3 text-white transform scale-[1.02] border border-blue-500">
+                            <div class="bg-white text-blue-700 font-bold h-6 w-6 rounded-full flex items-center justify-center text-xs shrink-0 mt-0.5">2</div>
+                            <div>
+                                <p class="text-xs font-bold text-blue-200 uppercase tracking-wider">AI Support Target (Replaced Friction Step)</p>
+                                <p id="bpStep2" class="text-base font-bold mt-0.5">Loading AI target...</p>
+                                <p id="bpFrictionText" class="text-xs text-blue-100 italic mt-1 bg-blue-700/50 p-1.5 rounded">Friction: None</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-3.5 rounded-xl border border-blue-100 shadow-xs flex gap-3">
+                            <div class="bg-gray-200 text-gray-700 font-bold h-6 w-6 rounded-full flex items-center justify-center text-xs shrink-0 mt-0.5">3</div>
+                            <div>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Human Review Gate</p>
+                                <p id="bpStep3" class="text-sm font-medium text-gray-800 mt-0.5">Loading step data...</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-3.5 rounded-xl border border-blue-100 shadow-xs flex gap-3">
+                            <div class="bg-gray-200 text-gray-700 font-bold h-6 w-6 rounded-full flex items-center justify-center text-xs shrink-0 mt-0.5">4</div>
+                            <div>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Final Step</p>
+                                <p class="text-sm font-medium text-gray-800 mt-0.5">Share, save, or deploy finalized asset.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">What will you still review manually? (Be specific)</label>
+                        <input type="text" id="humanManualReview" class="w-full bg-white border border-gray-300 rounded-lg p-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Accuracy of organizational timelines, making sure tone fits criteria">
+                    </div>
+                </div>
+            </div>
+
+            <div id="step6" class="step-panel">
+                <span class="text-xs font-semibold uppercase tracking-wider text-blue-600">Step 6 of 7</span>
+                <h2 class="text-2xl font-bold mt-1 mb-2 text-gray-900">Create a Prompt You Can Reuse</h2>
+                <p class="text-gray-600 mb-6">Fill in the fields below to dynamically generate your reusable tactical prompt framework.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Task/Context</label>
+                        <input type="text" id="pContext" oninput="buildPrompt()" class="w-full bg-white border border-gray-300 rounded-lg p-2 text-sm" placeholder="e.g., constructive employee feedback phrasing">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Specific Action required from AI</label>
+                        <input type="text" id="pAction" oninput="buildPrompt()" class="w-full bg-white border border-gray-300 rounded-lg p-2 text-sm" placeholder="e.g., polish notes into supportive growth phrasing">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Audience</label>
+                        <input type="text" id="pAudience" oninput="buildPrompt()" class="w-full bg-white border border-gray-300 rounded-lg p-2 text-sm" placeholder="e.g., an individual contributor during a 1:1 sync">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Expected Output Format</label>
+                        <input type="text" id="pFormat" oninput="buildPrompt()" class="w-full bg-white border border-gray-300 rounded-lg p-2 text-sm" placeholder="e.g., talking points split by actionable feedback blocks">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Tone Profile</label>
+                        <input type="text" id="pTone" oninput="buildPrompt()" class="w-full bg-white border border-gray-300 rounded-lg p-2 text-sm" placeholder="e.g., constructive, supportive, clear">
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 rounded-xl shadow-inner p-6">
+                    <div class="flex justify-between items-center pb-3 mb-3 border-b border-gray-800">
+                        <span class="text-xs text-gray-400 uppercase tracking-wider font-mono">Live Template Output</span>
+                        <button onclick="copyPromptText('livePromptBox6')" class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 text-xs rounded border border-gray-700 transition font-sans font-medium">Copy Prompt</button>
+                    </div>
+                    <div id="livePromptBox6" class="font-mono text-sm leading-relaxed text-blue-300 whitespace-pre-wrap">...</div>
+                </div>
+            </div>
+
+            <div id="step7" class="step-panel">
+                <span class="text-xs font-semibold uppercase tracking-wider text-blue-600">Step 7 of 7</span>
+                <h2 class="text-2xl font-bold mt-1 mb-2 text-gray-900">Add the Human Review Step</h2>
+                <p class="text-gray-600 mb-6">A redesigned AI-supported workflow still needs human judgment. Set your final review rule before using the output.</p>
+
+                <div class="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-400 p-6 rounded-2xl mb-6 shadow-sm">
+                    <p class="font-bold text-amber-950 mb-2 flex items-center gap-2 text-md">
+                        <span>💡 Standard Review Baseline:</span>
+                    </p>
+                    <ul class="list-disc list-inside space-y-1.5 text-sm text-amber-900 font-medium pl-1">
+                        <li>Is it accurate and strictly grounded in the real source notes?</li>
+                        <li>Did the AI add or assume any unsupported info?</li>
+                        <li>Is the tone right for your intended audience?</li>
+                    </ul>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Your Ready-to-Use Custom Prompt:</label>
+                    <div class="bg-gray-900 rounded-xl shadow-inner p-6">
+                        <div class="flex justify-between items-center pb-3 mb-3 border-b border-gray-800">
+                            <span class="text-xs text-gray-400 uppercase tracking-wider font-mono">Final Blueprint Output</span>
+                            <button onclick="copyPromptText('livePromptBox7')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 text-xs rounded transition font-sans font-bold shadow-sm">Copy Prompt</button>
+                        </div>
+                        <div id="livePromptBox7" class="font-mono text-sm leading-relaxed text-blue-300 whitespace-pre-wrap">...</div>
+                    </div>
+                </div>
+
+                <label class="block font-semibold text-gray-800 mb-2">Complete your final workflow step:</label>
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4">
+                    <span class="text-gray-500 font-medium block mb-2 text-sm">Before I use the AI output, I will explicitly check for:</span>
+                    <input type="text" id="reviewOutputMandate" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., checking specific policy dates and making sure phrasing isn't robotic">
+                </div>
+
+                <div id="successDashboard" class="hidden mt-8 p-6 bg-green-50 border border-green-300 rounded-2xl text-green-900">
+                    <h3 class="text-lg font-bold flex items-center gap-2">🎉 Workflow Strategy Complete</h3>
+                    <p class="text-sm mt-1 text-green-700">You have mapped out your manual inputs, established safety thresholds, and successfully extracted your functional prompt template framework.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between border-t border-gray-100 pt-6 mt-8">
+                <button id="prevBtn" onclick="navigateStep(-1)" class="px-5 py-2.5 text-sm font-semibold border border-gray-300 text-gray-600 rounded-xl hover:bg-gray-50 transition cursor-pointer visibility-hidden">Back</button>
+                <button id="nextBtn" onclick="navigateStep(1)" class="px-5 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition shadow-sm cursor-pointer shadow-blue-200">Next Step</button>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="text-center py-4 text-xs text-gray-400 border-t border-gray-100 bg-white">
+        Operational Framework Tool - Interactive Learning Matrix.
+    </footer>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 7;
+
+        function updateUI() {
+            document.querySelectorAll('.step-panel').forEach((panel, idx) => {
+                panel.classList.toggle('active', (idx + 1) === currentStep);
+            });
+
+            document.getElementById('prevBtn').style.visibility = (currentStep === 1) ? 'hidden' : 'visible';
+            
+            if (currentStep === totalSteps) {
+                document.getElementById('nextBtn').innerText = "Finish Blueprint";
+                document.getElementById('nextBtn').classList.replace('bg-blue-600', 'bg-green-600');
+            } else {
+                document.getElementById('nextBtn').innerText = "Next Step";
+                document.getElementById('nextBtn').classList.replace('bg-green-600', 'bg-blue-600');
+            }
+
+            const percentage = (currentStep / totalSteps) * 100;
+            document.getElementById('progressBar').style.width = `${percentage}%`;
+
+            // INJECTION LOGIC FOR STEP 5 BLUEPRINT BUILDER
+            if(currentStep === 5) {
+                const taskName = document.getElementById('taskInput').value || "Your Task";
+                const step1Input = document.getElementById('manualStep1').value || "Gather and organize raw materials.";
+                const step2Input = document.getElementById('manualStep2').value || "Execute the baseline processing draft workflow structure manually.";
+                const step3Input = document.getElementById('manualStep3').value || "Perform context styling review passes.";
+                const friction = document.getElementById('frictionInput').value || "No manual friction stated.";
+                const selectedAiPoint = document.querySelector('input[name="aiPoint"]:checked').value;
+
+                document.getElementById('bpTaskTitle').innerText = taskName;
+                document.getElementById('bpStep1').innerText = step1Input;
+                document.getElementById('bpStep2').innerText = `Use AI to completely manage or accelerate: "${selectedAiPoint}"`;
+                document.getElementById('bpFrictionText').innerText = `Targeted Friction Fix: "${friction}"`;
+                document.getElementById('bpStep3').innerText = `Human Validation Gate: Verify step elements inside: "${step3Input}"`;
+            }
+        }
+
+        function syncTaskName() {
+            const currentVal = document.getElementById('taskInput').value;
+            document.getElementById('pContext').value = currentVal;
+            buildPrompt();
+        }
+
+        function selectExample(text) {
+            document.getElementById('taskInput').value = text;
+            document.getElementById('pContext').value = text;
+            buildPrompt();
+        }
+
+        function validateStep() {
+            if (currentStep === 1) {
+                if(!document.getElementById('taskInput').value.trim()) {
+                    alert("Please state or choose a recurring task framework to begin initialization.");
+                    return false;
+                }
+            }
+            if (currentStep === 2) {
+                const g2 = document.getElementById('gate2').checked;
+                const g3 = document.getElementById('gate3').checked;
+                const g4 = document.getElementById('gate4').checked;
+                
+                if (!g2 || !g3 || !g4) {
+                    document.getElementById('riskBlocker').classList.remove('hidden');
+                    return false;
+                } else {
+                    document.getElementById('riskBlocker').classList.add('hidden');
+                }
+            }
+            return true;
+        }
+
+        function navigateStep(direction) {
+            if (direction === 1 && !validateStep()) return;
+
+            if (currentStep === totalSteps && direction === 1) {
+                document.getElementById('successDashboard').classList.remove('hidden');
+                alert("Your workflow blueprint is complete! You can copy your customized prompt right from this screen.");
+                return;
+            }
+
+            currentStep += direction;
+            if (currentStep < 1) currentStep = 1;
+            if (currentStep > totalSteps) currentStep = totalSteps;
+            updateUI();
+        }
+
+        function buildPrompt() {
+            const context = document.getElementById('pContext').value.trim() || "[task/context]";
+            const action = document.getElementById('pAction').value.trim() || "[specific action]";
+            const audience = document.getElementById('pAudience').value.trim() || "[audience]";
+            const format = document.getElementById('pFormat').value.trim() || "[format]";
+            const tone = document.getElementById('pTone').value.trim() || "[tone]";
+
+            const cHTML = document.getElementById('pContext').value.trim() ? `<span class="text-white font-bold">${context}</span>` : context;
+            const aHTML = document.getElementById('pAction').value.trim() ? `<span class="text-white font-bold">${action}</span>` : action;
+            const audHTML = document.getElementById('pAudience').value.trim() ? `<span class="text-white font-bold">${audience}</span>` : audience;
+            const fHTML = document.getElementById('pFormat').value.trim() ? `<span class="text-white font-bold">${format}</span>` : format;
+            const tHTML = document.getElementById('pTone').value.trim() ? `<span class="text-white font-bold">${tone}</span>` : tone;
+
+            const computedTemplateHTML = `I'm working on ${cHTML}. Help me ${aHTML}. The audience is ${audHTML}. Use the following information: [inputs]. Please format the output as ${fHTML}. Keep the tone ${tHTML}. Do not add unsupported information. Flag anything that needs human review.`;
+            
+            document.getElementById('livePromptBox6').innerHTML = computedTemplateHTML;
+            document.getElementById('livePromptBox7').innerHTML = computedTemplateHTML;
+        }
+
+        function copyPromptText(boxId) {
+            const textToCopy = document.getElementById(boxId).innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert("Prompt text successfully copied to your clipboard!");
+            });
+        }
+
+        buildPrompt();
+        updateUI();
+    </script>
+</body>
+</html>
