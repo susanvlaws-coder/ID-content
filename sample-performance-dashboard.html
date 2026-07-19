@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stephen Lee - Performance Dashboard</title>
+    <!-- Import Open Sans from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2557a7; /* Indeed Blue */
+            --danger: #d9381e;
+            --warning: #ffba24;
+            --success: #14854c;
+            --neutral-dark: #2d2d2d;
+            --neutral-light: #f3f2f1;
+            --border: #d4d2d0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--neutral-dark);
+            background-color: #faf9f8;
+            margin: 0;
+            padding: 16px;
+        }
+
+        .dashboard-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .dashboard-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-text h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-text p {
+            margin: 4px 0 0 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .header-logo-text {
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 700;
+            font-size: 28px;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            user-select: none;
+        }
+
+        /* Tabs Interface */
+        .tabs-nav {
+            display: flex;
+            background: var(--neutral-light);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 14px 20px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: #595959;
+            cursor: pointer;
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+            background: rgba(37, 87, 167, 0.05);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: #ffffff;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 24px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Metrics Summary Bar */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            background: #ffffff;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #6a6a6a;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .metric-value.neg { color: var(--danger); }
+        .metric-value.pos { color: var(--success); }
+
+        /* Tables styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--neutral-light);
+            color: var(--neutral-dark);
+            font-weight: 600;
+            padding: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        tr:hover td {
+            background-color: #fcfcfc;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-danger { background-color: #fde8e4; color: var(--danger); }
+        .badge-success { background-color: #e1f2e8; color: var(--success); }
+        .badge-info { background-color: #e8f0fe; color: var(--primary); }
+
+        .callout-box {
+            background: #fff9e6;
+            border-left: 4px solid var(--warning);
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            border-radius: 0 4px 4px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div class="header-text">
+            <h1>📊 Stephen Lee</h1>
+            <p>Performance File Profile & Audit Logs | Quarter 2 Evaluation</p>
+        </div>
+        <div class="header-logo-text">
+            Indeed
+        </div>
+    </div>
+
+    <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab(event, 'deliverables')">Deliverables & Code</button>
+        <button class="tab-btn" onclick="switchTab(event, 'csat')">Client Satisfaction</button>
+        <button class="tab-btn" onclick="switchTab(event, 'conduct')">Team Collaboration</button>
+        <button class="tab-btn" onclick="switchTab(event, 'attendance')">Attendance Logs</button>
+    </div>
+
+    <!-- TAB 1: DELIVERABLES -->
+    <div id="deliverables" class="tab-content active">
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Total Q2 Deliverables</div>
+                <div class="metric-value">12</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">On-Time Submissions</div>
+                <div class="metric-value pos">5</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Late Submissions</div>
+                <div class="metric-value neg">7</div>
+            </div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Deliverables Due</th>
+                    <th>On-Time</th>
+                    <th>Late</th>
+                    <th>Documented Coaching Session</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>April</td>
+                    <td>4</td>
+                    <td>1</td>
+                    <td><span class="badge badge-danger">3 Late</span></td>
+                    <td>April 12 (1:1, recapped via email April 12)[cite: 2]</td>
+                </tr>
+                <tr>
+                    <td>May</td>
+                    <td>4</td>
+                    <td>2</td>
+                    <td><span class="badge badge-danger">2 Late</span></td>
+                    <td>May 5 (1:1, recapped via email May 5)[cite: 2]</td>
+                </tr>
+                <tr>
+                    <td>June</td>
+                    <td>4</td>
+                    <td>2</td>
+                    <td><span class="badge badge-danger">2 Late</span></td>
+                    <td>June 9 (1:1, recapped via email June 9)[cite: 2]</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TAB 2: CSAT -->
+    <div id="csat" class="tab-content">
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Q2 CSAT Average</div>
+                <div class="metric-value neg">62%</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Target Team Benchmark</div>
+                <div class="metric-value">80%</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Net Deficit Gap</div>
+                <div class="metric-value neg">-18%</div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Stephen's Score</th>
+                    <th>Team Benchmark</th>
+                    <th>Variance / Gap Impact</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>April</td>
+                    <td>61%</td>
+                    <td>80%</td>
+                    <td><span class="badge badge-danger">-19% below</span></td>
+                </tr>
+                <tr>
+                    <td>May</td>
+                    <td>63%</td>
+                    <td>80%</td>
+                    <td><span class="badge badge-danger">-17% below</span></td>
+                </tr>
+                <tr>
+                    <td>June</td>
+                    <td>62%</td>
+                    <td>80%</td>
+                    <td><span class="badge badge-danger">-18% below</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TAB 3: CONDUCT -->
+    <div id="conduct" class="tab-content">
+        <div class="callout-box">
+            <strong>Cross-Functional Signal Flag:</strong> Peer and team-lead qualitative input indicates an ongoing operational impact during internal technical syncs.
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Incident Logged</th>
+                    <th>Operational Impact Noted</th>
+                    <th>Documented Action/Follow-Up</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>June 3</td>
+                    <td>Interrupted 2 colleagues during sprint planning[cite: 2]</td>
+                    <td>Meeting agenda derailed; 15 min overrun[cite: 2]</td>
+                    <td>Slack message sent June 3[cite: 2]</td>
+                </tr>
+                <tr>
+                    <td>June 10</td>
+                    <td>Interrupted 3 colleagues during retrospective[cite: 2]</td>
+                    <td>Two team members raised formal concern to manager[cite: 2]</td>
+                    <td><span class="badge badge-info">1:1 on June 11</span> Email recap June 11[cite: 2]</td>
+                </tr>
+                <tr>
+                    <td>June 17</td>
+                    <td>Interrupted 2 colleagues during team standup[cite: 2]</td>
+                    <td>Team lead flagged pattern to manager[cite: 2]</td>
+                    <td><span class="badge badge-info">1:1 on June 18</span> Email recap June 18[cite: 2]</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TAB 4: ATTENDANCE -->
+    <div id="attendance" class="tab-content">
+        <div class="metrics-grid">
+            <div class="metric-card" style="border-left: 4px solid var(--danger);">
+                <div class="metric-label">Missed Client Calls (Last 30 Days)</div>
+                <div class="metric-value neg">5 Total</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Prior No-Show Notices Given</div>
+                <div class="metric-value">0</div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Impacted Client Account</th>
+                    <th>Prior Notice?</th>
+                    <th>Weekly 1:1 Review</th>
+                    <th>Written Confirmation Record</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>June 2</td>
+                    <td>Client A</td>
+                    <td><span class="badge badge-danger">No</span></td>
+                    <td>June 3</td>
+                    <td>Email record sent June 3[cite: 2]</td>
+                </tr>
+                <tr>
+                    <td>June 8</td>
+                    <td>Client B</td>
+                    <td><span class="badge badge-danger">No</span></td>
+                    <td>June 9</td>
+                    <td>Email record sent June 9[cite: 2]</td>
+                </tr>
+                <tr>
+                    <td>June 14</td>
+                    <td>Client C</td>
+                    <td><span class="badge badge-danger">No</span></td>
+                    <td>June 16</td>
+                    <td>Email record sent June 16[cite: 2]</td>
+                </tr>
+                <tr>
+                    <td>June 19</td>
+                    <td>Client D</td>
+                    <td><span class="badge badge-danger">No</span></td>
+                    <td>June 20</td>
+                    <td>Email record sent June 20[cite: 2]</td>
+                </tr>
+                <tr>
+                    <td>June 25</td>
+                    <td>Client E</td>
+                    <td><span class="badge badge-danger">No</span></td>
+                    <td>June 25</td>
+                    <td>Email record sent June 25[cite: 2]</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script {RULE 1: STRICT COMPLETION}>
+    function switchTab(evt, tabId) {
+        const tabContents = document.getElementsByClassName("tab-content");
+        for (let i = 0; i < tabContents.length; i++) {
+            tabContents[i].classList.remove("active");
+        }
+
+        const tabButtons = document.getElementsByClassName("tab-btn");
+        for (let i = 0; i < tabButtons.length; i++) {
+            tabButtons[i].classList.remove("active");
+        }
+
+        document.getElementById(tabId).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+</script>
+
+</body>
+</html>
